@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<script>
+  (function() {
+    var GA_ID = 'G-PLACEHOLDER';
+    var isLocalDev = ['localhost', '127.0.0.1', ''].includes(location.hostname);
+    if (isLocalDev) return;
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', GA_ID);
+  })();
+</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>サークルカットメーカー(完全無料)</title>
+<style>
+  :root {
+    --accent: #c9587a;
+    --accent-dark: #9c3b58;
+    --bg: #fbf6f8;
+    --card: #ffffff;
+    --border: #f0dce3;
+    --text: #2e2a2c;
+    --muted: #6e5e63;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    color: #fff;
+    padding: 28px 20px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 8px; font-size: 22px; }
+  header p { margin: 0; font-size: 13px; opacity: 0.9; }
+  main {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  @media (min-width: 900px) {
+    main { grid-template-columns: 1fr 1fr; align-items: start; }
+    .preview-col { position: sticky; top: 20px; }
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+  .card h2 {
+    margin: 0 0 14px;
+    font-size: 16px;
+    border-left: 4px solid var(--accent);
+    padding-left: 10px;
+  }
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .field input[type="text"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .preset-options { display: flex; flex-wrap: wrap; gap: 8px; }
+  .preset-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+    min-height: 44px;
+    flex: 1 1 45%;
+  }
+  .preset-btn.selected { border-color: var(--accent); background: #fdeef2; color: var(--accent-dark); font-weight: bold; }
+  .preset-btn .size { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .preset-btn.selected .size { color: var(--accent-dark); }
+  .custom-size-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+  .custom-size-row label { display: flex; align-items: center; gap: 6px; }
+  .custom-size-row input {
+    width: 90px;
+    min-height: 44px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+  .file-row { display: flex; align-items: center; gap: 10px; }
+  .btn {
+    background: var(--accent-dark);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    min-height: 44px;
+  }
+  .btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+  .btn.ghost {
+    background: none;
+    color: var(--accent-dark);
+    border: 1px solid var(--accent-dark);
+  }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+  .zoom-row { display: flex; align-items: center; gap: 10px; }
+  .zoom-row input[type="range"] { flex: 1; }
+  .frame-options { display: flex; flex-wrap: wrap; gap: 8px; }
+  .frame-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    min-height: 44px;
+  }
+  .frame-btn.selected { border-color: var(--accent); background: #fdeef2; color: var(--accent-dark); font-weight: bold; }
+  .canvas-outer {
+    display: flex;
+    justify-content: center;
+    background: repeating-conic-gradient(#eee 0% 25%, #fff 0% 50%) 50% / 16px 16px;
+    border-radius: 10px;
+    padding: 14px;
+  }
+  #stageCanvas {
+    max-width: 100%;
+    height: auto;
+    touch-action: none;
+    cursor: grab;
+    border: 1px solid var(--border);
+    background: #fff;
+  }
+  #stageCanvas.dragging { cursor: grabbing; }
+  .note {
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 10px;
+    white-space: pre-wrap;
+  }
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 24px 20px 40px;
+  }
+  footer a { color: var(--accent-dark); }
+  #stageCanvas:focus-visible {
+    outline: 3px solid var(--accent-dark);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>サークルカットメーカー</h1>
+  <p>お手持ちのイラストをアップロードして、即売会の申込サイズにぴったり合わせて書き出せます(完全無料・登録不要)</p>
+</header>
+
+<main>
+
+  <div class="form-col">
+
+    <div class="card">
+      <h2>① サイズを選ぶ</h2>
+      <div class="preset-options" id="presetOptions"></div>
+      <div class="custom-size-row" id="customSizeRow" style="display:none;">
+        <label>幅<input type="text" inputmode="numeric" id="customW" placeholder="635"></label>
+        <label>高さ<input type="text" inputmode="numeric" id="customH" placeholder="903"></label>
+        <span style="font-size:12px; color:var(--muted);">px</span>
+      </div>
+      <div class="note">サイズは2026年9月時点で各即売会が公表している申込規定に基づく目安です。年度・回によって変更される場合があるため、提出前に必ず最新の公式サイトでご確認ください。</div>
+    </div>
+
+    <div class="card">
+      <h2>② イラストをアップロード</h2>
+      <div class="file-row">
+        <input type="file" id="imageInput" accept="image/*" aria-label="イラスト画像を選択">
+      </div>
+      <div class="note">画像はブラウザ内で処理され、どこにも送信されません。対応形式: PNG/JPEG/GIF/WEBP(3MB以下)。</div>
+    </div>
+
+    <div class="card">
+      <h2>③ 位置・拡大率を調整</h2>
+      <div class="field">
+        <label for="zoomRange">拡大率</label>
+        <div class="zoom-row">
+          <input type="range" id="zoomRange" min="100" max="400" value="100" disabled>
+          <span id="zoomLabel">100%</span>
+        </div>
+      </div>
+      <div class="note">プレビュー内をドラッグ(スマホは指でスワイプ)すると位置を調整できます。プレビューを選択して矢印キーでも動かせます。</div>
+      <div class="note" id="resNote" style="display:none;"></div>
+      <div class="btn-row">
+        <button type="button" class="btn ghost" id="resetPositionBtn">位置をリセット</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>④ 飾り枠(お好みで)</h2>
+      <div class="frame-options" id="frameOptions"></div>
+    </div>
+
+    <div class="card">
+      <h2>⑤ サークル名(任意で画像に入れる)</h2>
+      <div class="field">
+        <label for="circleNameInput">サークル名</label>
+        <input type="text" id="circleNameInput" placeholder="例: つきよみ堂" maxlength="40">
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button type="button" class="btn" id="downloadBtn" disabled>PNGでダウンロード</button>
+    </div>
+  </div>
+
+  <div class="preview-col">
+    <div class="card">
+      <h2>プレビュー</h2>
+      <div class="canvas-outer">
+        <canvas id="stageCanvas" tabindex="0" role="img" aria-label="プレビュー画像。矢印キーで位置を調整できます。"></canvas>
+      </div>
+      <div class="note" id="sizeNote" aria-live="polite"></div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>入力内容・画像は一切外部に送信されません(すべてブラウザ内で完結します)。</p>
+  <p>公式のロゴ・キャラクター等は含まれません。サイズはコミックマーケット準備会・技術書典運営・コミティア実行委員会が公表している申込規定を参考にした目安で、これらの運営とは提携・関係がありません。年度・回によって規定が変更される場合があるため、提出前に必ず各即売会の最新公式情報でご確認ください。</p>
+  <p>不具合・ご要望は BOOTHメッセージ、または X(Twitter) <a href="https://x.com/uuhai0625" target="_blank" rel="noopener">@uuhai0625</a> まで。</p>
+  <p>同人イベント準備には<a href="https://uuhai0625.github.io/circle-card-maker/" target="_blank" rel="noopener">サークルカードメーカー</a>・<a href="https://uuhai0625.github.io/doujin-okuzuke-maker/" target="_blank" rel="noopener">同人誌奥付メーカー</a>・<a href="https://uuhai0625.github.io/nyuko-countdown/" target="_blank" rel="noopener">入稿締切カウントダウン</a>も、収支管理には買い切りツールの<a href="https://uuhai0625.booth.pm/items/8812753" target="_blank" rel="noopener">同人活動収支・経費可視化シートメーカー</a>もどうぞ。<a href="https://uuhai0625.booth.pm/" target="_blank" rel="noopener">他の無料ツール・買い切りツールもBOOTHで公開中</a>。</p>
+</footer>
+
+<script>
+function esc(s) {
+  return (s || "").toString().replace(/[<>&"']/g, function (c) {
+    return { "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+
+var PRESETS = [
+  { id: "comiket", label: "コミケ・技術書典など", w: 635, h: 903 },
+  { id: "comitia", label: "コミティア", w: 638, h: 945 },
+  { id: "custom", label: "カスタムサイズ", w: null, h: null }
+];
+
+var FRAMES = [
+  { id: "none", label: "なし" },
+  { id: "simple", label: "シンプル枠" },
+  { id: "corner", label: "コーナー飾り" },
+  { id: "rounded", label: "角丸パステル" }
+];
+
+var MIN_CUSTOM_SIZE = 50;
+var MAX_CUSTOM_SIZE = 4000;
+
+var state = {
+  presetId: "comiket",
+  w: 635,
+  h: 903,
+  frameId: "none",
+  circleName: "",
+  img: null,
+  zoom: 1,
+  offsetX: 0,
+  offsetY: 0
+};
+
+var canvas = document.getElementById("stageCanvas");
+var ctx = canvas.getContext("2d");
+
+function currentPreset() {
+  return PRESETS.filter(function (p) { return p.id === state.presetId; })[0] || PRESETS[0];
+}
+
+function buildPresetOptions() {
+  var wrap = document.getElementById("presetOptions");
+  wrap.innerHTML = "";
+  PRESETS.forEach(function (p) {
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.dataset.presetId = p.id;
+    btn.innerHTML = esc(p.label) + (p.w ? '<span class="size">' + p.w + '×' + p.h + 'px</span>' : '<span class="size">サイズを指定</span>');
+    btn.addEventListener("click", function () {
+      state.presetId = p.id;
+      if (p.w) {
+        applySize(p.w, p.h);
+      } else {
+        var cw = parseCustomDimension(document.getElementById("customW").value, 635);
+        var ch = parseCustomDimension(document.getElementById("customH").value, 903);
+        applySize(cw, ch);
+      }
+      updatePresetSelection();
+      document.getElementById("customSizeRow").style.display = p.id === "custom" ? "flex" : "none";
+    });
+    wrap.appendChild(btn);
+  });
+  updatePresetSelection();
+}
+
+function updatePresetSelection() {
+  var wrap = document.getElementById("presetOptions");
+  Array.prototype.forEach.call(wrap.children, function (btn) {
+    var selected = btn.dataset.presetId === state.presetId;
+    btn.className = "preset-btn" + (selected ? " selected" : "");
+    btn.setAttribute("aria-pressed", selected ? "true" : "false");
+  });
+}
+
+function parseCustomDimension(raw, fallback) {
+  var n = Math.round(Number(String(raw).trim()));
+  if (!isFinite(n)) return fallback;
+  return Math.max(MIN_CUSTOM_SIZE, Math.min(MAX_CUSTOM_SIZE, n));
+}
+
+function applySize(w, h) {
+  state.w = w;
+  state.h = h;
+  canvas.width = w;
+  canvas.height = h;
+  if (state.presetId === "custom") {
+    document.getElementById("customW").value = w;
+    document.getElementById("customH").value = h;
+  }
+  clampOffsets();
+  renderCanvas();
+  document.getElementById("sizeNote").textContent = "書き出しサイズ: " + w + " × " + h + " px";
+  updateResNote();
+}
+
+function updateResNote() {
+  var note = document.getElementById("resNote");
+  if (!state.img || !state.img.naturalWidth || !state.img.naturalHeight) {
+    note.style.display = "none";
+    return;
+  }
+  var baseScale = Math.max(state.w / state.img.naturalWidth, state.h / state.img.naturalHeight);
+  if (baseScale > 1) {
+    note.textContent = "アップロードした画像の解像度がやや低いため、書き出し時に画質が粗くなる可能性があります。できれば" + Math.ceil(state.img.naturalWidth * baseScale) + "×" + Math.ceil(state.img.naturalHeight * baseScale) + "px相当以上の画像をご利用ください。";
+    note.style.display = "block";
+  } else {
+    note.style.display = "none";
+  }
+}
+
+function buildFrameOptions() {
+  var wrap = document.getElementById("frameOptions");
+  wrap.innerHTML = "";
+  FRAMES.forEach(function (f) {
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.dataset.frameId = f.id;
+    btn.textContent = f.label;
+    btn.addEventListener("click", function () {
+      state.frameId = f.id;
+      updateFrameSelection();
+      renderCanvas();
+    });
+    wrap.appendChild(btn);
+  });
+  updateFrameSelection();
+}
+
+function updateFrameSelection() {
+  var wrap = document.getElementById("frameOptions");
+  Array.prototype.forEach.call(wrap.children, function (btn) {
+    var selected = btn.dataset.frameId === state.frameId;
+    btn.className = "frame-btn" + (selected ? " selected" : "");
+    btn.setAttribute("aria-pressed", selected ? "true" : "false");
+  });
+}
+
+function drawFrame(frameId, w, h) {
+  ctx.save();
+  if (frameId === "simple") {
+    ctx.strokeStyle = "#9c3b58";
+    ctx.lineWidth = Math.max(4, Math.round(w * 0.012));
+    ctx.strokeRect(ctx.lineWidth / 2, ctx.lineWidth / 2, w - ctx.lineWidth, h - ctx.lineWidth);
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = Math.max(2, Math.round(w * 0.005));
+    var inset = Math.max(10, Math.round(w * 0.03));
+    ctx.strokeRect(inset, inset, w - inset * 2, h - inset * 2);
+  } else if (frameId === "corner") {
+    var len = Math.round(Math.min(w, h) * 0.16);
+    var pad = Math.round(w * 0.035);
+    var lw = Math.max(4, Math.round(w * 0.014));
+    ctx.strokeStyle = "#c9587a";
+    ctx.lineWidth = lw;
+    ctx.lineCap = "round";
+    [[pad, pad, 1, 1], [w - pad, pad, -1, 1], [pad, h - pad, 1, -1], [w - pad, h - pad, -1, -1]].forEach(function (c) {
+      var cx = c[0], cy = c[1], dx = c[2], dy = c[3];
+      ctx.beginPath();
+      ctx.moveTo(cx + dx * len, cy);
+      ctx.lineTo(cx, cy);
+      ctx.lineTo(cx, cy + dy * len);
+      ctx.stroke();
+    });
+  } else if (frameId === "rounded") {
+    var r = Math.round(Math.min(w, h) * 0.05);
+    var m = Math.max(8, Math.round(w * 0.02));
+    ctx.strokeStyle = "#e58fa8";
+    ctx.lineWidth = Math.max(6, Math.round(w * 0.018));
+    ctx.beginPath();
+    ctx.moveTo(m + r, m);
+    ctx.arcTo(w - m, m, w - m, h - m, r);
+    ctx.arcTo(w - m, h - m, m, h - m, r);
+    ctx.arcTo(m, h - m, m, m, r);
+    ctx.arcTo(m, m, w - m, m, r);
+    ctx.closePath();
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function clampOffsets() {
+  if (!state.img) return;
+  var baseScale = Math.max(state.w / state.img.naturalWidth, state.h / state.img.naturalHeight);
+  var scale = baseScale * state.zoom;
+  var drawW = state.img.naturalWidth * scale;
+  var drawH = state.img.naturalHeight * scale;
+  var maxOffsetX = Math.max(0, (drawW - state.w) / 2);
+  var maxOffsetY = Math.max(0, (drawH - state.h) / 2);
+  state.offsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, state.offsetX));
+  state.offsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, state.offsetY));
+}
+
+function renderCanvas() {
+  var w = state.w, h = state.h;
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, w, h);
+
+  if (state.img) {
+    var baseScale = Math.max(w / state.img.naturalWidth, h / state.img.naturalHeight);
+    var scale = baseScale * state.zoom;
+    var drawW = state.img.naturalWidth * scale;
+    var drawH = state.img.naturalHeight * scale;
+    var dx = (w - drawW) / 2 + state.offsetX;
+    var dy = (h - drawH) / 2 + state.offsetY;
+    ctx.drawImage(state.img, dx, dy, drawW, drawH);
+  } else {
+    ctx.fillStyle = "#8a7d81";
+    ctx.font = Math.max(12, Math.round(w * 0.04)) + "px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("イラストをアップロードしてください", w / 2, h / 2);
+  }
+
+  drawFrame(state.frameId, w, h);
+
+  if (state.circleName) {
+    var fontSize = Math.max(14, Math.round(w * 0.055));
+    ctx.save();
+    ctx.font = "bold " + fontSize + "px 'Hiragino Sans','Yu Gothic',sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    var tx = w / 2;
+    var ty = h - fontSize * 0.9;
+    ctx.lineWidth = Math.max(3, Math.round(fontSize * 0.18));
+    ctx.strokeStyle = "rgba(255,255,255,0.9)";
+    ctx.strokeText(state.circleName, tx, ty);
+    ctx.fillStyle = "#2e2a2c";
+    ctx.fillText(state.circleName, tx, ty);
+    ctx.restore();
+  }
+}
+
+var ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"];
+var SAFE_IMAGE_DATA_URI = /^data:image\/(png|jpe?g|gif|webp);base64,[A-Za-z0-9+/]+=*$/;
+function isSafeImageDataUri(s) {
+  return typeof s === "string" && SAFE_IMAGE_DATA_URI.test(s);
+}
+
+document.getElementById("imageInput").addEventListener("change", function (e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  if (ALLOWED_IMAGE_TYPES.indexOf(file.type) === -1) {
+    alert("対応していない画像形式です(PNG/JPEG/GIF/WEBPをご利用ください)。");
+    e.target.value = "";
+    return;
+  }
+  if (file.size > 3 * 1024 * 1024) {
+    alert("画像サイズが大きすぎます(3MB以下にしてください)。");
+    e.target.value = "";
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function (ev) {
+    if (!isSafeImageDataUri(ev.target.result)) {
+      alert("画像の読み込みに失敗しました。");
+      return;
+    }
+    var img = new Image();
+    img.onload = function () {
+      if (!img.naturalWidth || !img.naturalHeight) {
+        alert("画像の読み込みに失敗しました。");
+        return;
+      }
+      if (img.naturalWidth * img.naturalHeight > 40000000) {
+        alert("画像の解像度が大きすぎます。もう少し小さい画像をご利用ください。");
+        return;
+      }
+      state.img = img;
+      state.zoom = 1;
+      state.offsetX = 0;
+      state.offsetY = 0;
+      document.getElementById("zoomRange").disabled = false;
+      document.getElementById("zoomRange").value = 100;
+      document.getElementById("zoomLabel").textContent = "100%";
+      document.getElementById("downloadBtn").disabled = false;
+      renderCanvas();
+      updateResNote();
+    };
+    img.onerror = function () {
+      alert("画像の読み込みに失敗しました。");
+    };
+    img.src = ev.target.result;
+  };
+  reader.onerror = function () {
+    alert("画像の読み込みに失敗しました。");
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById("zoomRange").addEventListener("input", function (e) {
+  state.zoom = Number(e.target.value) / 100;
+  document.getElementById("zoomLabel").textContent = e.target.value + "%";
+  clampOffsets();
+  renderCanvas();
+});
+
+document.getElementById("resetPositionBtn").addEventListener("click", function () {
+  state.zoom = 1;
+  state.offsetX = 0;
+  state.offsetY = 0;
+  document.getElementById("zoomRange").value = 100;
+  document.getElementById("zoomLabel").textContent = "100%";
+  renderCanvas();
+});
+
+document.getElementById("circleNameInput").addEventListener("input", function (e) {
+  state.circleName = e.target.value;
+  renderCanvas();
+});
+
+["customW", "customH"].forEach(function (id) {
+  document.getElementById(id).addEventListener("input", function () {
+    if (state.presetId !== "custom") return;
+    var cw = parseCustomDimension(document.getElementById("customW").value, state.w);
+    var ch = parseCustomDimension(document.getElementById("customH").value, state.h);
+    applySize(cw, ch);
+  });
+});
+
+var downloadBtn = document.getElementById("downloadBtn");
+downloadBtn.addEventListener("click", function () {
+  if (!state.img || downloadBtn.disabled) return;
+  downloadBtn.disabled = true;
+  canvas.toBlob(function (blob) {
+    downloadBtn.disabled = false;
+    if (!blob) {
+      alert("画像の書き出しに失敗しました。");
+      return;
+    }
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "circlecut_" + state.w + "x" + state.h + ".png";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 30000);
+  }, "image/png");
+});
+
+var dragging = false;
+var dragStartX = 0, dragStartY = 0, dragOffsetStartX = 0, dragOffsetStartY = 0;
+
+function canvasScaleRatio() {
+  var rect = canvas.getBoundingClientRect();
+  return rect.width > 0 ? canvas.width / rect.width : 1;
+}
+
+function pointerPos(e) {
+  return { x: e.clientX, y: e.clientY };
+}
+
+canvas.addEventListener("pointerdown", function (e) {
+  if (!state.img) return;
+  dragging = true;
+  canvas.classList.add("dragging");
+  canvas.setPointerCapture(e.pointerId);
+  var p = pointerPos(e);
+  dragStartX = p.x;
+  dragStartY = p.y;
+  dragOffsetStartX = state.offsetX;
+  dragOffsetStartY = state.offsetY;
+});
+
+canvas.addEventListener("pointermove", function (e) {
+  if (!dragging) return;
+  var p = pointerPos(e);
+  var ratio = canvasScaleRatio();
+  state.offsetX = dragOffsetStartX + (p.x - dragStartX) * ratio;
+  state.offsetY = dragOffsetStartY + (p.y - dragStartY) * ratio;
+  clampOffsets();
+  renderCanvas();
+});
+
+function endDrag(e) {
+  if (!dragging) return;
+  dragging = false;
+  canvas.classList.remove("dragging");
+}
+canvas.addEventListener("pointerup", endDrag);
+canvas.addEventListener("pointercancel", endDrag);
+canvas.addEventListener("pointerleave", function (e) {
+  if (dragging && e.buttons === 0) endDrag(e);
+});
+
+canvas.addEventListener("keydown", function (e) {
+  if (!state.img) return;
+  var step = e.shiftKey ? 40 : 10;
+  var handled = true;
+  if (e.key === "ArrowLeft") state.offsetX -= step;
+  else if (e.key === "ArrowRight") state.offsetX += step;
+  else if (e.key === "ArrowUp") state.offsetY -= step;
+  else if (e.key === "ArrowDown") state.offsetY += step;
+  else handled = false;
+  if (handled) {
+    e.preventDefault();
+    clampOffsets();
+    renderCanvas();
+  }
+});
+
+buildPresetOptions();
+buildFrameOptions();
+applySize(state.w, state.h);
+</script>
+
+</body>
+</html>
